@@ -1,0 +1,101 @@
+{
+  "n_train": 1428,
+  "n_val": 306,
+  "n_test": 307,
+  "pca_components": 389,
+  "cv_summary": {
+    "LogisticRegression": {
+      "best_params": {
+        "C": 0.1
+      },
+      "cv_best_f1": 0.5829402366934959
+    },
+    "SVM_RBF": {
+      "best_params": {
+        "C": 1,
+        "gamma": "scale"
+      },
+      "cv_best_f1": 0.6050298111840768
+    },
+    "RandomForest": {
+      "best_params": {
+        "max_depth": 20,
+        "n_estimators": 200
+      },
+      "cv_best_f1": 0.5422608284886783
+    }
+  },
+  "test_results": {
+    "LogisticRegression": {
+      "accuracy": 0.6775244299674267,
+      "precision": 0.6380368098159509,
+      "recall": 0.7222222222222222,
+      "f1": 0.6775244299674267,
+      "auc": 0.7074386503067484,
+      "confusion_matrix": [
+        [
+          104,
+          59
+        ],
+        [
+          40,
+          104
+        ]
+      ]
+    },
+    "SVM_RBF": {
+      "accuracy": 0.6905537459283387,
+      "precision": 0.6580645161290323,
+      "recall": 0.7083333333333334,
+      "f1": 0.6822742474916388,
+      "auc": 0.7361324130879345,
+      "confusion_matrix": [
+        [
+          110,
+          53
+        ],
+        [
+          42,
+          102
+        ]
+      ]
+    },
+    "RandomForest": {
+      "accuracy": 0.5895765472312704,
+      "precision": 0.5671641791044776,
+      "recall": 0.5277777777777778,
+      "f1": 0.5467625899280576,
+      "auc": 0.635864008179959,
+      "confusion_matrix": [
+        [
+          105,
+          58
+        ],
+        [
+          68,
+          76
+        ]
+      ]
+    }
+  },
+  "best_model": "SVM_RBF",
+  "difficulty_breakdown": {
+    "easy": {
+      "n": 41,
+      "recall_as_fake_detected": 0.5365853658536586
+    },
+    "mid": {
+      "n": 68,
+      "recall_as_fake_detected": 0.8235294117647058
+    },
+    "hard": {
+      "n": 35,
+      "recall_as_fake_detected": 0.6857142857142857
+    }
+  },
+  "feature_group_importance": {
+    "LBP (54)": 0.02837034383528296,
+    "Color-texture (108)": 0.050107102667701874,
+    "HOG (1568)": 0.9215225534970153
+  }
+}

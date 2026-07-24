@@ -1,0 +1,58 @@
+{
+  "bootstrap_ci_original_split": {
+    "LogisticRegression": {
+      "accuracy": {
+        "mean": 0.6778280130293161,
+        "ci_lower": 0.6254071661237784,
+        "ci_upper": 0.7296416938110749
+      },
+      "f1": {
+        "mean": 0.6772778489449506,
+        "ci_lower": 0.6153846153846154,
+        "ci_upper": 0.7354930006086425
+      },
+      "auc": {
+        "mean": 0.7076609938353354,
+        "ci_lower": 0.6493628259433046,
+        "ci_upper": 0.7653776165292526
+      },
+      "n_bootstrap": 5000
+    },
+    "SVM_RBF": {
+      "accuracy": {
+        "mean": 0.6906612377850162,
+        "ci_lower": 0.6384364820846905,
+        "ci_upper": 0.742671009771987
+      },
+      "f1": {
+        "mean": 0.6818107740598673,
+        "ci_lower": 0.6181786616161616,
+        "ci_upper": 0.7412140575079872
+      },
+      "auc": {
+        "mean": 0.736265765856122,
+        "ci_lower": 0.680608782565523,
+        "ci_upper": 0.7892655054741493
+      },
+      "n_bootstrap": 5000
+    }
+  },
+  "repeated_split_comparison": {
+    "n_repeats": 30,
+    "svm_rbf_mean_acc": 0.6402823018458197,
+    "svm_rbf_std_acc": 0.03036045773989307,
+    "logreg_mean_acc": 0.6055374592833878,
+    "logreg_std_acc": 0.03048872895020794,
+    "mean_diff": 0.03474484256243209,
+    "std_diff": 0.02275043399537052,
+    "paired_ttest": {
+      "statistic": 8.364910327548992,
+      "p_value": 3.2100786352759247e-09
+    },
+    "wilcoxon_signed_rank": {
+      "statistic": 0.0,
+      "p_value": 3.76504565303767e-06
+    }
+  },
+  "interpretation": "Across 30 independent random splits, SVM-RBF beat LogisticRegression on mean test accuracy by +0.0347 (paired t-test p=0.0000, Wilcoxon p=0.0000). This gap is unlikely to be due to chance."
+}

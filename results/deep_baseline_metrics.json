@@ -1,0 +1,40 @@
+{
+  "model": "MobileNetV2 (ImageNet-pretrained, fine-tuned)",
+  "img_size": 160,
+  "epochs_head": 5,
+  "epochs_finetune": 10,
+  "n_train": 1428,
+  "n_val": 306,
+  "n_test": 307,
+  "test_results": {
+    "accuracy": 0.5993485342019544,
+    "precision": 0.6019417475728155,
+    "recall": 0.4305555555555556,
+    "f1": 0.5020242914979757,
+    "auc": 0.6488582140422631,
+    "confusion_matrix": [
+      [
+        122,
+        41
+      ],
+      [
+        82,
+        62
+      ]
+    ]
+  },
+  "difficulty_breakdown": {
+    "easy": {
+      "n": 41,
+      "recall_as_fake_detected": 0.43902439024390244
+    },
+    "mid": {
+      "n": 68,
+      "recall_as_fake_detected": 0.4852941176470588
+    },
+    "hard": {
+      "n": 35,
+      "recall_as_fake_detected": 0.3142857142857143
+    }
+  }
+}
