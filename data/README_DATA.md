@@ -46,17 +46,31 @@ tone, lighting, and alignment at the splice boundary) are precisely the kind
 of local edge/gradient discontinuity HOG is designed to detect, which is a
 more mechanistically specific explanation than a generic "GAN artifact" claim.
 
-## License (needs manual verification -- not yet confirmed)
+## License (confirmed via Kaggle API)
 
-The exact license/usage terms are listed on the Kaggle dataset page itself
-(https://www.kaggle.com/datasets/ciplab/real-and-fake-face-detection), which
-requires a logged-in browser session to render and could not be verified
-via automated fetch. **Before submitting anywhere with a provenance/license
-requirement, log in to Kaggle and copy the exact license field from the
-dataset's "About this Dataset" / metadata panel into this file.** Do not
-assume a specific license (e.g., CC0, CC-BY) without checking -- Kaggle
-datasets vary widely in their stated terms, and misstating a license in a
-publication is a real (and easily avoided) problem.
+**License: CC-BY-NC-SA-4.0** (Creative Commons Attribution-NonCommercial-
+ShareAlike 4.0 International), confirmed directly from the dataset's
+Kaggle metadata via `kaggle datasets metadata`.
+
+This means: (1) attribution to the CIPLAB/Yonsei creators is required
+(see citation below) whenever this dataset or derived results are
+published; (2) **the dataset may not be used for commercial purposes**;
+(3) any redistributed derivative of the dataset itself must carry the
+same CC-BY-NC-SA-4.0 license. This is compatible with academic
+publication (non-commercial research use), but should be stated
+explicitly in the paper's data availability statement, and this project
+should not be positioned for any commercial use case without separately
+licensing the data from CIPLAB/Yonsei.
+
+**Official citation** (from the dataset's own metadata):
+
+> Seonghyeon Nam, Seoung Wug Oh, Jae Yeon Kang, Chang Ha Shin, Younghyun
+> Jo, Young Hwi Kim, Kyungmin Kim, Minho Shim, Sungho Lee, Yunji Kim, Suho
+> Han, Gunhee Nam, Dasol Lee, Subin Jeon, In Cho, Woongoh Cho, Sejong
+> Yang, Dongyoung Kim, Hyolim Kang, Sukjun Hwang, and Seon Joo Kim.
+> (2019, January). Real and Fake Face Detection, Version 1. Retrieved
+> [Date Retrieved] from
+> https://www.kaggle.com/datasets/ciplab/real-and-fake-face-detection.
 
 
 
@@ -72,3 +86,21 @@ ln -s /tmp/dataset_repo/real_and_fake_face_detection/real_and_fake_face data/rea
 above, used here only for convenient cloning; the citation and license terms
 are governed by the original CIPLAB/Kaggle source, not the re-upload.)
 
+
+
+## Second dataset: NUAA Photograph Imposter Database (cross-dataset test)
+
+Used for the genuine cross-dataset generalization test in report §8.2.
+
+- Source: NUAA Photograph Imposter Database (Tan et al., print-attack PAD
+  corpus), via the pre-cropped/aligned Kaggle mirror
+  `immada/cropped-and-align-nuaa`.
+- License: **MIT** (confirmed via `kaggle datasets download` output at
+  download time).
+- Original citation: X. Tan, Y. Li, J. Liu, L. Jiang. "Face Liveness
+  Detection from A Single Image with Sparse Low Rank Bilinear
+  Discriminative Model." ECCV 2010.
+- Usage here: train+test splits combined into a single held-out target
+  set (`data/nuaa_final/{real,fake}/`) of 12,611 images, evaluated with
+  `src/cross_dataset_eval.py`. The model was never trained on any NUAA
+  images -- this is a pure out-of-distribution generalization test.

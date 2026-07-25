@@ -108,7 +108,7 @@ face_antispoofing/
 │   ├── ablation_study.py             # feature-family ablation (LBP/color/HOG/combined)
 │   ├── statistical_significance.py   # bootstrap CI + paired significance tests
 │   ├── deep_baseline_mobilenetv2.py  # deep-learning baseline (ready-to-run, unexecuted)
-│   ├── cross_dataset_eval.py         # cross-dataset generalization protocol (ready-to-run, unexecuted)
+│   ├── cross_dataset_eval.py         # cross-dataset generalization protocol (executed vs. NUAA, see report \u00a78.2)
 │   └── predict.py                    # single-image inference
 ├── results/                          # features, metrics, ablation, significance, trained model, figures
 ├── report/REPORT.md                  # full research report

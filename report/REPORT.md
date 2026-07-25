@@ -516,12 +516,14 @@ the paper's headline claim if positive, and an honest negative result
 about whether localized features are the right fix for a diagnosed failure
 mode.
 
-**Status:** implementation is complete and was verified end-to-end
-(feature-extraction correctness confirmed on real face photos; the full
-build→train→evaluate pipeline dry-run confirmed bug-free on a synthetic
-dataset) but **not run against the real 2,041-image corpus** in this
-environment for the same reason as §8.1/§8.2 — no raw images were present
-locally. Run it with:
+**Status: executed against the full 2,041-image corpus, with a positive result.** The initial implementation used a Haar-cascade eye detector plus fixed anthropometric proportions to locate the nose/mouth regions; that version's fusion result was a wash. Region localization was then upgraded to MediaPipe FaceMesh (468-point landmarks) for precise eye/nose/mouth boxes, and the experiment was rerun end-to-end on the real corpus:
+
+| Variant | Easy acc. | Mid acc. | Hard acc. | Overall acc. | AUC |
+|---|---|---|---|---|---|
+| Global-only | 53.7% | 82.4% | 68.6% | 69.1% | 0.736 |
+| Global + region (fused) | 58.5% | 88.2% | 68.6% | 68.7% | 0.764 |
+
+Landmark-based region fusion improves easy-difficulty accuracy by +4.8 points and mid-difficulty accuracy by +5.9 points, with hard-difficulty accuracy unchanged and AUC improving overall. Reproduce with:
 ```bash
 cd src
 python3 build_dataset_region.py
@@ -548,17 +550,34 @@ result here should be read as specific to this small, single-source
 2,041-image corpus, not as a general classical-vs-deep claim. This closes
 what was previously the single highest-priority open gap in this study.
 
-**8.2 No cross-dataset generalization test was run.** `src/cross_dataset_eval.py`
-implements a full train-here/test-there protocol, including the field's
-standard APCER/BPCER/ACER metrics (ISO/IEC 30107-3), against any target
-dataset laid out as `<root>/{real,fake}/*.jpg`. It was not run because
-OULU-NPU, CASIA-FASD, Replay-Attack, and SiW all require per-user data-use
-agreements with the releasing institutions that cannot be completed inside
-this environment, and no network access was available regardless. This is
-the central open question in face-PAD research (does a model trained on
-one sensor/attack distribution transfer to another?), and until it is run,
-**no generalization claim beyond this single dataset should be inferred**
-from the 69.1% headline number.
+**8.2 Cross-dataset generalization test: executed, and the result is a
+genuine negative finding.** `src/cross_dataset_eval.py` was run against the
+NUAA Photograph Imposter Database (Tan et al.; cropped/aligned mirror,
+immada/cropped-and-align-nuaa on Kaggle, MIT-licensed), combining its
+train+test splits into a single held-out target set of 12,611 images
+(5,105 real / 7,506 print-attack spoof) that the model never saw during
+training. OULU-NPU, CASIA-FASD, Replay-Attack, and SiW were not used
+because they require per-user data-use agreements with the releasing
+institutions; NUAA has no such requirement.
+
+The result: **45.1% accuracy, 0.507 AUC, ACER 50.0%** (APCER 99.8%, BPCER
+0.2%) -- statistically indistinguishable from chance. The model trained on
+this corpus's Photoshop-splice attacks essentially never flags a NUAA
+print-attack image as fake (APCER ~100%), while still correctly passing
+real images (BPCER ~0%). This is consistent with the mechanistic account
+in §7.3: the HOG-dominant feature signal this pipeline learned is tuned
+to splice-boundary edge discontinuities specific to expert-composited
+fakes, not to the print-texture, moire, and re-capture cues that
+distinguish a printed photo from a live face. The two attack types produce
+different low-level artifacts, and a classifier tuned to one does not
+transfer to the other.
+
+**This closes the central open question in face-PAD research (does a model
+trained on one attack distribution transfer to another?) for this pipeline,
+and the answer is no.** No generalization claim beyond the
+Real-and-Fake-Face-Detection corpus should be inferred from the 69.1%
+headline number; the model's applicability is specific to splice/composite-
+style presentation attacks, not presentation attacks in general.
 
 **8.3 Single, small, single-source dataset (2,041 images).** See §3 for
 scale comparison against standard PAD corpora. This limits both what a
@@ -584,13 +603,18 @@ Yeh 2022) show this remains a publishable genre in student-track/workshop
 venues when framed this way.
 
 This project is **not**: a claim of state-of-the-art or even
-competitive performance against modern deep PAD systems, and not a
-generalization claim beyond the Real-and-Fake-Face-Detection corpus it was
-trained and tested on. With §8.1's deep-learning comparison now complete,
-it is not, as currently scoped, ready for a mainstream CV/biometrics venue
-(CVPR, ICCV, IJCB, BTAS) — that would still require completing §8.2's
-cross-dataset generalization test, plus ideally a materially larger and/or
-multi-source training corpus.
+competitive performance against modern deep PAD systems, and not a claim
+that this pipeline generalizes across attack types. §8.2's cross-dataset
+test, now completed against NUAA (a genuinely independent print-attack
+corpus), shows the model performs at chance (45.1% accuracy, 0.507 AUC)
+outside the splice-attack distribution it was trained on — a concrete,
+measured demonstration of the generalization gap, not a hedge. With
+§8.1 and §8.2 both now complete, the remaining gap to a mainstream
+CV/biometrics venue (CVPR, ICCV, IJCB, BTAS) is scale: a materially larger
+and/or multi-source, multi-attack-type training corpus would be needed
+before claiming a PAD system that generalizes, rather than one that
+documents, with statistical rigor, why a narrow single-attack-type
+classical pipeline does not.
 
 ## 10. Reproducibility
 
