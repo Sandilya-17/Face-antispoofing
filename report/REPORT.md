@@ -560,7 +560,7 @@ training. OULU-NPU, CASIA-FASD, Replay-Attack, and SiW were not used
 because they require per-user data-use agreements with the releasing
 institutions; NUAA has no such requirement.
 
-The result: **45.1% accuracy, 0.507 AUC, ACER 50.0%** (APCER 99.8%, BPCER
+The result: **40.5% accuracy, 0.507 AUC, ACER 50.0%** (APCER 99.8%, BPCER
 0.2%) -- statistically indistinguishable from chance. The model trained on
 this corpus's Photoshop-splice attacks essentially never flags a NUAA
 print-attack image as fake (APCER ~100%), while still correctly passing
@@ -606,7 +606,7 @@ This project is **not**: a claim of state-of-the-art or even
 competitive performance against modern deep PAD systems, and not a claim
 that this pipeline generalizes across attack types. §8.2's cross-dataset
 test, now completed against NUAA (a genuinely independent print-attack
-corpus), shows the model performs at chance (45.1% accuracy, 0.507 AUC)
+corpus), shows the model performs at chance (40.5% accuracy, 0.507 AUC)
 outside the splice-attack distribution it was trained on — a concrete,
 measured demonstration of the generalization gap, not a hedge. With
 §8.1 and §8.2 both now complete, the remaining gap to a mainstream
