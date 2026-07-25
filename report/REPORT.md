@@ -622,8 +622,4 @@ python3 cross_dataset_eval.py --target_root /path/to/target_dataset
     Descriptors with Deep Learning," *Computers and Electrical
     Engineering*, 127, 2025.
 24. A. Pinto, S. Goldenstein, A. Ferreira, T. Carvalho, H. Pedrini,
-    A. Rocha, "Leveraging Shape, Reflectance and Albedo from Shading for
-    Face Presentation Attack Detection," *IEEE TIFS*, 15, 2020.
-25. J. Hernandez-Ortega, J. Fierrez, A. Morales, J. Galbally,
-    "Introduction to Face Presentation Attack Detection," in *Handbook of
-    Biometric Anti-Spoofing*, Springer, 2019.
+[new paragraph text here]
