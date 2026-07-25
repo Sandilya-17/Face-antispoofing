@@ -56,22 +56,24 @@ def align_by_filename(X_g, y_g, diff_g, fn_g, X_r, fn_r, has_face=None):
 
 
 def fit_eval(X, y, difficulty, label, seed=SEED):
+    # IDENTICAL protocol to train_evaluate.py: scaler + PCA + CV are fit on the
+    # TRAIN split only. The validation split is never used for fitting anything
+    # in the classical pipeline (matches Section 6.1's stated protocol). Earlier
+    # versions of this script fit scaler/PCA on train+val, which is why results
+    # here previously diverged from the canonical train_evaluate.py numbers.
     X_train, X_temp, y_train, y_temp, d_train, d_temp = train_test_split(
         X, y, difficulty, test_size=0.30, stratify=y, random_state=seed
     )
     X_val, X_test, y_val, y_test, d_val, d_test = train_test_split(
         X_temp, y_temp, d_temp, test_size=0.50, stratify=y_temp, random_state=seed
     )
-    # Combine train+val for CV like the original pipeline, held-out test stays untouched
-    X_trainval = np.concatenate([X_train, X_val])
-    y_trainval = np.concatenate([y_train, y_val])
 
-    scaler = StandardScaler().fit(X_trainval)
-    X_trainval_s = scaler.transform(X_trainval)
+    scaler = StandardScaler().fit(X_train)
+    X_train_s = scaler.transform(X_train)
     X_test_s = scaler.transform(X_test)
 
-    pca = PCA(n_components=0.95, random_state=seed).fit(X_trainval_s)
-    X_trainval_p = pca.transform(X_trainval_s)
+    pca = PCA(n_components=0.95, random_state=seed).fit(X_train_s)
+    X_train_p = pca.transform(X_train_s)
     X_test_p = pca.transform(X_test_s)
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
@@ -80,7 +82,7 @@ def fit_eval(X, y, difficulty, label, seed=SEED):
         param_grid={"C": [1, 10, 50], "gamma": ["scale", 0.01]},
         scoring="f1", cv=cv, n_jobs=-1,
     )
-    grid.fit(X_trainval_p, y_trainval)
+    grid.fit(X_train_p, y_train)
     best = grid.best_estimator_
 
     y_pred = best.predict(X_test_p)
@@ -93,7 +95,7 @@ def fit_eval(X, y, difficulty, label, seed=SEED):
         "recall": recall_score(y_test, y_pred),
         "f1": f1_score(y_test, y_pred),
         "auc": roc_auc_score(y_test, y_prob),
-        "pca_dims": X_trainval_p.shape[1],
+        "pca_dims": X_train_p.shape[1],
         "raw_dims": X.shape[1],
         "best_params": grid.best_params_,
     }

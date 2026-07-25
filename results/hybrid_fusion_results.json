@@ -1,12 +1,12 @@
 {
   "global_only": {
     "label": "global_only",
-    "accuracy": 0.7133550488599348,
-    "precision": 0.6891891891891891,
+    "accuracy": 0.6905537459283387,
+    "precision": 0.6580645161290323,
     "recall": 0.7083333333333334,
-    "f1": 0.6986301369863014,
-    "auc": 0.740328902522154,
-    "pca_dims": 404,
+    "f1": 0.6822742474916388,
+    "auc": 0.7361111111111112,
+    "pca_dims": 389,
     "raw_dims": 1730,
     "best_params": {
       "C": 1,
@@ -15,11 +15,11 @@
     "difficulty_breakdown": {
       "easy": {
         "n": 41,
-        "accuracy": 0.5609756097560976
+        "accuracy": 0.5365853658536586
       },
       "mid": {
         "n": 68,
-        "accuracy": 0.8088235294117647
+        "accuracy": 0.8235294117647058
       },
       "hard": {
         "n": 35,
@@ -29,41 +29,13 @@
   },
   "region_only": {
     "label": "region_only",
-    "accuracy": 0.6351791530944625,
-    "precision": 0.6066666666666667,
-    "recall": 0.6319444444444444,
-    "f1": 0.6190476190476191,
-    "auc": 0.6866905248807088,
-    "pca_dims": 383,
+    "accuracy": 0.6058631921824105,
+    "precision": 0.5680473372781065,
+    "recall": 0.6666666666666666,
+    "f1": 0.6134185303514377,
+    "auc": 0.6766359918200409,
+    "pca_dims": 368,
     "raw_dims": 1350,
-    "best_params": {
-      "C": 1,
-      "gamma": "scale"
-    },
-    "difficulty_breakdown": {
-      "easy": {
-        "n": 41,
-        "accuracy": 0.3902439024390244
-      },
-      "mid": {
-        "n": 68,
-        "accuracy": 0.7647058823529411
-      },
-      "hard": {
-        "n": 35,
-        "accuracy": 0.6571428571428571
-      }
-    }
-  },
-  "global_plus_region": {
-    "label": "global_plus_region",
-    "accuracy": 0.6872964169381107,
-    "precision": 0.6578947368421053,
-    "recall": 0.6944444444444444,
-    "f1": 0.6756756756756757,
-    "auc": 0.7494461486025903,
-    "pca_dims": 639,
-    "raw_dims": 3080,
     "best_params": {
       "C": 1,
       "gamma": "scale"
@@ -79,7 +51,35 @@
       },
       "hard": {
         "n": 35,
-        "accuracy": 0.7142857142857143
+        "accuracy": 0.6
+      }
+    }
+  },
+  "global_plus_region": {
+    "label": "global_plus_region",
+    "accuracy": 0.6807817589576547,
+    "precision": 0.6369047619047619,
+    "recall": 0.7430555555555556,
+    "f1": 0.6858974358974359,
+    "auc": 0.7469964212678937,
+    "pca_dims": 594,
+    "raw_dims": 3080,
+    "best_params": {
+      "C": 1,
+      "gamma": "scale"
+    },
+    "difficulty_breakdown": {
+      "easy": {
+        "n": 41,
+        "accuracy": 0.5121951219512195
+      },
+      "mid": {
+        "n": 68,
+        "accuracy": 0.8676470588235294
+      },
+      "hard": {
+        "n": 35,
+        "accuracy": 0.7714285714285715
       }
     }
   }

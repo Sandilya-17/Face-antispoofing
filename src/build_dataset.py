@@ -1,8 +1,11 @@
 """
 Builds the feature dataset from the Real-and-Fake-Face-Detection image
-corpus (Yonsei CVIP / Kaggle "ciplab/real-and-fake-face-detection" style
-dataset: 1081 real faces, 960 GAN/print spoofed faces labelled by attack
-difficulty easy/mid/hard in the filename).
+corpus (CIPLAB / Yonsei University, Kaggle "ciplab/real-and-fake-face-
+detection": 1,081 real faces, 960 fake faces). The fakes are NOT GAN-
+generated -- they are expert-generated Photoshop composites (human experts
+splicing eyes/nose/mouth/whole-face regions from different real photos),
+labelled by (subjectively assigned) attack difficulty easy/mid/hard in the
+filename. See data/README_DATA.md for full provenance and citation details.
 
 Output: results/features.npz containing X, y, difficulty, filenames
 """
