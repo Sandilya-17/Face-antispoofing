@@ -13,8 +13,9 @@ detection (PAD)** system based on hand-crafted color-texture descriptors, in
 the tradition of Boulkenafet et al. (2015, 2016) and the classical Local
 Binary Pattern (LBP) operator of Ojala et al. (2002). We extract multi-scale
 LBP micro-texture, HOG shape/edge, and HSV/YCbCr color-reproduction
-statistics from 2,041 face images (1,081 real, 960 GAN/print-manipulated
-spoofs labeled by attack difficulty). Three classifiers are compared with
+statistics from 2,041 face images (1,081 real, 960 expert Photoshop
+composite spoofs -- eyes/nose/mouth/whole-face regions spliced from
+different real photos, NOT GAN-generated -- labeled by attack difficulty). Three classifiers are compared with
 5-fold cross-validated hyperparameter search; the best (SVM-RBF) reaches
 **69.1% test accuracy / 0.736 AUC**. Beyond the base pipeline, this study
 adds the three components most often missing from student/portfolio PAD
@@ -337,13 +338,14 @@ report's Gini-importance number: **the color-texture "fusion" design this
 pipeline follows (Boulkenafet et al., 2015/2016) is not earning its
 complexity on this particular dataset** — nearly all of the discriminative
 signal is coming from edge/shape structure (HOG), which is consistent
-with this dataset's dominant spoof type being GAN/print manipulations with
-detectable boundary and blending artifacts, rather than the moiré/color
+with this dataset's dominant spoof type being expert Photoshop image-
+splicing/compositing (blending seams between facial regions taken from
+different people) rather than the moiré/color
 re-reproduction artifacts LBP+color were originally designed to catch on
 print/replay-photo attacks specifically. This is a useful negative result
 and a concrete, evidence-backed reason to expect this pipeline's LBP/color
 components to matter more on a print/replay-attack dataset (e.g.
-Replay-Attack, CASIA-FASD) than on this GAN-heavy one — precisely the kind
+Replay-Attack, CASIA-FASD) than on this compositing-heavy one — precisely the kind
 of claim that needs the cross-dataset test in §8 to actually verify.
 
 ## 7. Statistical Significance (`src/statistical_significance.py`)

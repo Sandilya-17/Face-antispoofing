@@ -26,11 +26,13 @@ This script is provided ready-to-run but was NOT executed here, because:
      / Replay-Attack / SiW -- these require signing individual data-use
      agreements with the releasing institutions (Idiap, Oulu University,
      CASIA), which is a manual, per-user process that can't be scripted.
-  2. This project's own corpus is 2D print/GAN spoofs only (no video,
-     no replay, no 3D mask) -- so even after downloading a target set,
-     you may need to subset it to comparable attack types for a fair
-     reading of the numbers (e.g. exclude video-replay attacks against a
-     model that only ever saw single-frame print spoofs).
+  2. This project's own corpus is expert Photoshop-composite spoofs only
+     (image-splicing of eyes/nose/mouth/whole-face regions between real
+     photos -- NOT GAN-generated, and no video, no replay, no 3D mask) --
+     so even after downloading a target set, you may need to subset it to
+     comparable attack types for a fair reading of the numbers (e.g.
+     exclude video-replay attacks against a model that only ever saw
+     single-frame print/composite spoofs).
 
 HOW TO RUN THIS ONCE YOU HAVE ACCESS TO A TARGET DATASET
 -----------------------------------------------------------

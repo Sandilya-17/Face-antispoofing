@@ -70,16 +70,20 @@ def align_by_filename(X_g, y_g, diff_g, fn_g, X_r, fn_r, has_face=None):
 
 
 def fit_one_modality(X_train, y_train, X_val, y_val, seed=SEED):
-    """Fit scale->PCA->SVM-RBF (grid search) on ONE modality's train+val,
-    return the fitted pipeline pieces (needed to score val AND test)."""
-    X_trainval = np.concatenate([X_train, X_val])
-    y_trainval = np.concatenate([y_train, y_val])
+    """Fit scale->PCA->SVM-RBF (grid search) on ONE modality's TRAIN split
+    only, matching train_evaluate.py's canonical protocol (Section 6.1: no
+    test- or val-set information is used during fitting/model selection).
+    X_val/y_val are accepted but intentionally unused here -- the val split
+    is reserved for the fusion-weight sweep in main(), never for fitting the
+    scaler/PCA/classifier. (Previously this function fit on train+val
+    combined, which both leaked val into feature fitting and, along with the
+    same issue in train_hybrid_fusion.py, was the source of the cross-script
+    numerical drift reported in the paper's Section 11.4.)"""
+    scaler = StandardScaler().fit(X_train)
+    X_train_s = scaler.transform(X_train)
 
-    scaler = StandardScaler().fit(X_trainval)
-    X_trainval_s = scaler.transform(X_trainval)
-
-    pca = PCA(n_components=0.95, random_state=seed).fit(X_trainval_s)
-    X_trainval_p = pca.transform(X_trainval_s)
+    pca = PCA(n_components=0.95, random_state=seed).fit(X_train_s)
+    X_train_p = pca.transform(X_train_s)
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
     grid = GridSearchCV(
@@ -87,11 +91,24 @@ def fit_one_modality(X_train, y_train, X_val, y_val, seed=SEED):
         param_grid={"C": [1, 10, 50], "gamma": ["scale", 0.01]},
         scoring="f1", cv=cv, n_jobs=-1,
     )
-    grid.fit(X_trainval_p, y_trainval)
+    grid.fit(X_train_p, y_train)
     return scaler, pca, grid.best_estimator_, grid.best_params_
 
 
 def score(scaler, pca, model, X):
+    """Returns calibrated P(real) via predict_proba(), thresholded at 0.5
+    downstream for accuracy. NOTE: this decision rule is NOT identical to
+    SVC.predict(), which uses the underlying margin/decision-function sign
+    rather than a literal 0.5 cut on the Platt-scaled probability -- the two
+    disagree on ~5% of predictions even when ranking (AUC) is identical.
+    predict_proba()-thresholding is required here because score-level fusion
+    needs calibrated probabilities to combine; train_evaluate.py and
+    train_hybrid_fusion.py use .predict() instead. This means the
+    'global_alone_on_test' baseline reported by THIS script is evaluated
+    under a different decision rule than the headline SVM-RBF numbers in
+    train_evaluate.py/train_hybrid_fusion.py, and the two should not be
+    read as more-precise disagreements -- they are different, both valid,
+    decision rules applied to the identical fitted model."""
     return model.predict_proba(pca.transform(scaler.transform(X)))[:, 1]
 
 
