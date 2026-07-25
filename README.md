@@ -9,10 +9,11 @@ rigorous cross-validation, a controlled feature-family ablation, bootstrap
 set.
 
 **Full write-up:** [`report/REPORT.md`](report/REPORT.md) — methodology,
-results, ablation study, statistical significance testing, confusion
-matrices, ROC curves, per-attack-difficulty analysis, an explicit account
-of what this study does *not* show (deep baseline, cross-dataset test)
-with ready-to-run scripts for both, honest framing, and 25 references.
+results, a completed deep-learning baseline comparison (§5.5), ablation
+study, statistical significance testing, confusion matrices, ROC curves,
+per-attack-difficulty analysis, an explicit account of what this study
+still does *not* show (cross-dataset generalization test, §8.2) with a
+ready-to-run script, honest framing, and 25 references.
 
 ## Results at a glance
 
@@ -21,6 +22,15 @@ with ready-to-run scripts for both, honest framing, and 25 references.
 | Logistic Regression | 67.8% | 0.678 | 0.707 |
 | **SVM (RBF)** — best | **69.1%** | **0.682** | **0.736** |
 | Random Forest | 58.6% | 0.455 | 0.622 |
+| MobileNetV2 (deep, fine-tuned) | 60.9% | 0.496 | 0.667 |
+
+**Deep vs. classical (§5.5 of the report):** a fine-tuned, ImageNet-
+pretrained MobileNetV2 *underperforms* the classical SVM-RBF pipeline on
+this corpus — likely small-data overfitting combined with a mismatch
+between generic CNN features and this dataset's Photoshop-splice-edge
+spoof signal, which hand-crafted HOG is well-suited to detect (§7.3 shows
+HOG carries 92.3% of feature importance). Read as specific to this small,
+single-source dataset, not a general classical-vs-deep claim.
 
 Dataset: 2,041 images (1,081 real, 960 spoofed, labeled by attack
 difficulty easy/mid/hard).
@@ -77,10 +87,12 @@ python3 train_hybrid_fusion.py         # NEW: global vs region vs fused, + diffi
 python3 predict.py path/to/face.jpg    # run inference with the saved best model
 ```
 
-Two additional scripts are included **ready to run but not executed** in
-this repo's results (see report §8 for exactly why):
+`deep_baseline_mobilenetv2.py` has now been run (results in
+`results/deep_baseline_metrics.json`, discussed in report §5.5). One
+script remains **ready to run but not executed** (see report §8.2 for
+exactly why):
 ```bash
-python3 deep_baseline_mobilenetv2.py                          # needs GPU + raw images
+python3 deep_baseline_mobilenetv2.py                          # DONE — see §5.5
 python3 cross_dataset_eval.py --target_root /path/to/dataset   # needs a 2nd PAD dataset
 ```
 
@@ -120,9 +132,9 @@ protocol and why they weren't executed here.
 ## Honest scope
 
 This is a **classical-baseline re-evaluation with full statistical
-rigor** — a legitimate genre for a course project, portfolio piece, or
-workshop/student-track submission once the deep baseline is added. It is
-**not** a state-of-the-art claim and is **not**, as scoped, ready for a
-mainstream CV/biometrics venue (CVPR, ICCV, IJCB, BTAS) without the deep
-baseline and cross-dataset results filled in. See report §9 for the full
-"honest framing" discussion.
+rigor**, now including a completed deep-learning comparison — a legitimate
+genre for a course project, portfolio piece, or workshop/student-track
+submission. It is **not** a state-of-the-art claim and is **not**, as
+scoped, ready for a mainstream CV/biometrics venue (CVPR, ICCV, IJCB,
+BTAS) without the cross-dataset generalization results (§8.2) filled in.
+See report §9 for the full "honest framing" discussion.

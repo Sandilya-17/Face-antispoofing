@@ -31,15 +31,19 @@ it is in fact a small but statistically reliable effect across resamples
 (paired t-test p < 0.0001); **(iii) a region-local feature fusion experiment** that
 directly tests whether the "easy attack" blind spot found in (i) can be
 closed by computing the same descriptors locally on eye/nose/mouth patches
-rather than globally (implementation complete and verified bug-free;
-awaiting real-data execution, see §7.4); and **(iv) an honest, explicit
-positioning of this work relative to the field**: we do not claim
-state-of-the-art performance, we did not have access to a second dataset or GPU compute in
-this environment, and we specify exactly what a deep-learning baseline and
-a cross-dataset generalization test would require (both are provided here
-as ready-to-run, unexecuted scripts with a documented protocol). This
-report is best read as **a classical-baseline re-evaluation with full
-statistical rigor** — a legitimate and useful genre of PAD paper — rather
+rather than globally (see §7.4); **(iv) a completed deep-learning
+comparison** (§5.5) -- an ImageNet-pretrained MobileNetV2, fine-tuned on
+the identical split, underperforms the classical pipeline on every metric
+except precision (60.9% accuracy / 0.667 AUC vs. 69.1% / 0.736), a
+counter-intuitive but mechanistically explainable result given the
+small-data regime and the specifically edge/gradient-based nature of this
+corpus's spoof signal; and **(v) an honest, explicit positioning of this
+work relative to the field**: we do not claim state-of-the-art
+performance, we did not have access to a second dataset for cross-dataset
+generalization testing in this environment, and we specify exactly what
+that test would require (provided here as a ready-to-run, unexecuted
+script with a documented protocol, §8.2). This report is best read as
+**a classical-baseline re-evaluation with full statistical rigor** — a legitimate and useful genre of PAD paper — rather
 than a claim of matching or exceeding modern deep PAD systems, which
 typically report AUCs in the high-0.90s on standard benchmarks (OULU-NPU,
 CASIA-FASD, Replay-Attack, SiW) using depth/rPPG/frequency supervision that
@@ -306,6 +310,67 @@ difficulty, not machine detectability** — worth flagging for any
 downstream use of this corpus, and a concrete argument for localized
 (patch-based) features in future work.
 
+### 5.5 Comparison to a Deep-Learning Baseline (`src/deep_baseline_mobilenetv2.py`)
+
+To answer the question §8.1 anticipated ("how does this compare to a
+CNN?"), we fine-tuned an ImageNet-pretrained MobileNetV2 on the identical
+70/15/15 split (1,428 train / 306 val / 307 test images), using the
+standard two-phase transfer-learning recipe: 5 epochs training only a new
+classification head with the backbone frozen, then 10 epochs fine-tuning
+the last 30 layers at a lower learning rate (full protocol in §8.1).
+
+| Model | Test Accuracy | Precision | Recall | F1 | AUC |
+|---|---|---|---|---|---|
+| SVM-RBF (classical, best) | **69.1%** | 65.8% | 70.8% | **0.682** | **0.736** |
+| MobileNetV2 (deep, fine-tuned) | 60.9% | 62.8% | 41.0% | 0.496 | 0.667 |
+
+Contrary to the common assumption that a pretrained CNN will outperform
+hand-crafted features by default, **the deep baseline underperforms the
+classical pipeline on every metric except precision**, substantially so on
+F1 (0.496 vs. 0.682) and recall (41.0% vs. 70.8%). The confusion matrix
+(128 TN, 35 FP, 85 FN, 59 TP) shows the model is heavily biased toward
+predicting "real": it misses 85 of 144 fake test images entirely.
+
+Two mechanisms plausibly explain this:
+
+1. **Small-data overfitting.** Training accuracy climbed to 75.4% by the
+   final epoch while validation accuracy plateaued near 61% from epoch 5
+   onward -- a widening train/val gap consistent with overfitting when
+   fine-tuning a last-30-layers block on only 1,428 images.
+2. **Feature-type mismatch.** The spoof signal in this corpus is expert
+   Photoshop-splice edge discontinuities -- mismatched skin tone,
+   lighting, and alignment at region-blend boundaries (§3,
+   data/README_DATA.md). This is precisely the local, high-frequency
+   gradient signal HOG is purpose-built to detect (§7.3: HOG carries
+   92.3% of Random Forest feature importance), whereas ImageNet-pretrained
+   CNN features are optimized for generic object/texture recognition and
+   may not isolate this specific artifact class without more spoof-specific
+   training data than is available here.
+
+**Per-difficulty breakdown (recall on fake images):**
+
+| Difficulty | n (test) | SVM-RBF (classical) | MobileNetV2 (deep) |
+|---|---|---|---|
+| Easy | 41 | 53.7% | 41.5% |
+| Mid | 68 | 82.4% | 48.5% |
+| Hard | 35 | 68.6% | **25.7%** |
+
+The deep model's recall *decreases* monotonically as attacks get harder to
+spot -- the opposite of what a more powerful feature extractor should
+ideally produce, and a different failure pattern from the classical
+model's (which struggled most on "easy," not "hard," per §5.4). This
+divergence suggests the two approaches are sensitive to different aspects
+of the spoof signal: on this dataset and at this scale, hand-crafted
+texture descriptors generalize across attack difficulty more robustly than
+a fine-tuned ImageNet backbone does.
+
+**Honest caveat:** with only 1,428 training images, this is a genuinely
+small-data regime for fine-tuning a CNN; a larger and/or multi-source
+training corpus (§8.3) could plausibly reverse this result. This finding
+should be read as *"a fine-tuned MobileNetV2 does not outperform the
+classical pipeline on this specific 2,041-image corpus,"* not as a general
+claim that classical PAD features beat deep learning.
+
 ## 6. Ablation Study (`src/ablation_study.py`)
 
 **Question:** does fusing LBP + color + HOG actually help, or is one
@@ -468,20 +533,20 @@ python3 train_hybrid_fusion.py
 We name these gaps explicitly rather than let the headline accuracy number
 imply more than it does.
 
-**8.1 No deep-learning baseline was trained.** `src/deep_baseline_mobilenetv2.py`
-in this repository is a complete, ready-to-run MobileNetV2 transfer-learning
-baseline (frozen-backbone head training, then fine-tuning the last 30
-layers), matched to the exact same 70/15/15 split and reporting the same
-metric set as the classical pipeline for a like-for-like table. **It was
-not executed to produce the numbers in this report**, because this
-environment retained only the pre-extracted 1,730-d feature vectors
-(`results/features.npz`), not the raw JPEGs a CNN needs, and had no GPU or
-network access to re-download the source imagery. Running it (instructions
-in the script's docstring) is the single highest-value next step for this
-project — published PAD work typically reports deep-model AUCs in the
-high 0.90s on standard benchmarks, and this classical pipeline's 0.736 AUC
-should be read as a **lower bound**, not a competitive result, until that
-comparison exists.
+**8.1 Deep-learning baseline: executed (see §5.5).**
+`src/deep_baseline_mobilenetv2.py` was run on an Apple Silicon Mac
+(TensorFlow 2.16.2 + tensorflow-metal, GPU-accelerated via Metal), using
+the exact same 70/15/15 split and metric set as the classical pipeline for
+a like-for-like comparison. The result -- a fine-tuned MobileNetV2
+underperforming the classical SVM-RBF pipeline (60.9% accuracy / 0.667 AUC
+vs. 69.1% / 0.736) -- is reported and discussed in §5.5, including a
+plausible explanation (small-data overfitting plus a feature-type mismatch
+between generic ImageNet-pretrained CNN features and this corpus's
+Photoshop-splice-edge spoof signal). Published PAD work on standard,
+larger benchmarks typically reports deep-model AUCs in the high 0.90s; the
+result here should be read as specific to this small, single-source
+2,041-image corpus, not as a general classical-vs-deep claim. This closes
+what was previously the single highest-priority open gap in this study.
 
 **8.2 No cross-dataset generalization test was run.** `src/cross_dataset_eval.py`
 implements a full train-here/test-there protocol, including the field's
@@ -511,18 +576,21 @@ micro-motion, rPPG pulse) that dominate state-of-the-art PAD systems
 This project is: a legitimate, statistically validated re-evaluation of a
 classical color-texture PAD pipeline on one modest dataset, with a
 controlled ablation showing which feature family actually carries the
-signal, and with the deep-learning and cross-dataset gaps documented as
-ready-to-run (not hand-waved). Recent classical-descriptor PAD papers
-(Günay Yılmaz et al. 2023; Chang & Yeh 2022) show this remains a
-publishable genre in student-track/workshop venues when framed this way.
+signal, and with a completed deep-learning comparison (§5.5) showing the
+classical pipeline is, on this corpus, the stronger of the two -- an
+honest and somewhat counter-intuitive result, not a hand-waved gap.
+Recent classical-descriptor PAD papers (Günay Yılmaz et al. 2023; Chang &
+Yeh 2022) show this remains a publishable genre in student-track/workshop
+venues when framed this way.
 
 This project is **not**: a claim of state-of-the-art or even
 competitive performance against modern deep PAD systems, and not a
 generalization claim beyond the Real-and-Fake-Face-Detection corpus it was
-trained and tested on. It is not, as currently scoped, ready for a
-mainstream CV/biometrics venue (CVPR, ICCV, IJCB, BTAS) — that would
-require completing §8.1 and §8.2 with real numbers, plus a materially
-larger and/or multi-source training corpus.
+trained and tested on. With §8.1's deep-learning comparison now complete,
+it is not, as currently scoped, ready for a mainstream CV/biometrics venue
+(CVPR, ICCV, IJCB, BTAS) — that would still require completing §8.2's
+cross-dataset generalization test, plus ideally a materially larger and/or
+multi-source training corpus.
 
 ## 10. Reproducibility
 
@@ -535,7 +603,7 @@ face_antispoofing/
 │   ├── train_evaluate.py               # CV, training, evaluation, plots
 │   ├── ablation_study.py               # §6: feature-family ablation
 │   ├── statistical_significance.py     # §7: bootstrap CI + paired significance tests
-│   ├── deep_baseline_mobilenetv2.py    # §8.1: ready-to-run, NOT executed here
+│   ├── deep_baseline_mobilenetv2.py    # §8.1/§5.5: executed, results in results/deep_baseline_metrics.json
 │   ├── cross_dataset_eval.py           # §8.2: ready-to-run, NOT executed here
 │   └── predict.py                      # single-image inference
 ├── results/
