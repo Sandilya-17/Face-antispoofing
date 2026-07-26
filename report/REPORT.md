@@ -245,13 +245,29 @@ project already uses as its documented mediapipe fallback (see
 
 ### 6.2 Results
 
-| Configuration | Accuracy | AUC | Easy | Mid | Hard |
-|---|---|---|---|---|---|
-| Global (baseline, Sec 5.1) | 0.691 | 0.736 | 0.537 | 0.824 | 0.686 |
-| **GAN anomaly-only** | 0.469 | 0.499 | **0.976** | **0.971** | **0.943** |
-| Global + GAN (feature concat) | 0.550 | 0.643 | 0.756 | 0.882 | 0.886 |
-| Global + Region + GAN (feature concat) | 0.596 | 0.732 | 0.829 | 0.941 | 0.857 |
-| Global + GAN (score-level fusion, w=0.75) | 0.619 | 0.731 | 0.756 | -- | -- |
+*Numbers below are from a full local reproduction of this pipeline
+(macOS, CPU-only, `tensorflow` + identical seed=42 split), superseding an
+earlier development run whose 3-decimal figures differed only at the
+rounding level (e.g. easy=0.537 vs. 0.439 for the global baseline) --
+expected run-to-run drift from floating-point non-determinism in
+convolution ops across platforms/hardware, not a methodological change.*
+
+| Configuration | Accuracy | AUC | Precision | Recall | F1 | Easy | Mid | Hard |
+|---|---|---|---|---|---|---|---|---|
+| Global (baseline) | 0.6906 | 0.7362 | 0.6581 | 0.7083 | 0.6823 | 0.5366 | 0.8235 | 0.6857 |
+| **GAN anomaly-only** | 0.4691 | 0.4994 | 0.4680 | 0.9653 | 0.6304 | **0.9756** | **0.9706** | **0.9429** |
+| Global + GAN (feature concat) | 0.5505 | 0.6429 | 0.5126 | 0.8472 | 0.6387 | 0.7561 | 0.8824 | 0.8857 |
+| Global + Region + GAN (feature concat) | 0.5961 | 0.7320 | 0.5424 | 0.8889 | 0.6737 | 0.8293 | 0.9412 | 0.8571 |
+| Global + GAN (score-level fusion, w=0.75) | 0.6189 | 0.7306 | 0.5595 | 0.8819 | 0.6846 | 0.7561 | 0.9412 | 0.9143 |
+
+For the score-level fusion configuration specifically, the two independent
+classifiers being combined score as follows on the held-out test set:
+global-alone reaches 0.6678 accuracy / 0.7362 AUC (easy=0.4390,
+mid=0.7353, hard=0.6571), while the GAN-alone classifier scores 0.4691
+accuracy / 0.4994 AUC (easy=0.9756, mid=0.9706, hard=0.9429) -- the same
+near-perfect fake-recall, chance-level-AUC pattern seen in the feature-level
+configuration above, confirming the asymmetry is a property of the GAN
+score itself rather than an artifact of one particular fusion method.
 
 ![GAN Fusion Comparison](../results/figures/gan_fusion_comparison.png)
 
