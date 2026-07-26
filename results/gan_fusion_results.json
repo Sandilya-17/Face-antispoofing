@@ -1,0 +1,114 @@
+{
+  "global_only": {
+    "label": "global_only",
+    "accuracy": 0.6905537459283387,
+    "precision": 0.6580645161290323,
+    "recall": 0.7083333333333334,
+    "f1": 0.6822742474916388,
+    "auc": 0.7361111111111112,
+    "pca_dims": 389,
+    "raw_dims": 1730,
+    "best_params": {
+      "C": 1,
+      "gamma": "scale"
+    },
+    "difficulty_breakdown": {
+      "easy": {
+        "n": 41,
+        "accuracy": 0.5365853658536586
+      },
+      "mid": {
+        "n": 68,
+        "accuracy": 0.8235294117647058
+      },
+      "hard": {
+        "n": 35,
+        "accuracy": 0.6857142857142857
+      }
+    }
+  },
+  "gan_only": {
+    "label": "gan_only",
+    "accuracy": 0.46905537459283386,
+    "precision": 0.468013468013468,
+    "recall": 0.9652777777777778,
+    "f1": 0.6303854875283447,
+    "auc": 0.4993609406952966,
+    "pca_dims": 7,
+    "raw_dims": 7,
+    "best_params": {
+      "C": 1,
+      "gamma": "scale"
+    },
+    "difficulty_breakdown": {
+      "easy": {
+        "n": 41,
+        "accuracy": 0.975609756097561
+      },
+      "mid": {
+        "n": 68,
+        "accuracy": 0.9705882352941176
+      },
+      "hard": {
+        "n": 35,
+        "accuracy": 0.9428571428571428
+      }
+    }
+  },
+  "global_plus_gan": {
+    "label": "global_plus_gan",
+    "accuracy": 0.5504885993485342,
+    "precision": 0.5126050420168067,
+    "recall": 0.8472222222222222,
+    "f1": 0.6387434554973822,
+    "auc": 0.6430214723926381,
+    "pca_dims": 391,
+    "raw_dims": 1737,
+    "best_params": {
+      "C": 10,
+      "gamma": "scale"
+    },
+    "difficulty_breakdown": {
+      "easy": {
+        "n": 41,
+        "accuracy": 0.7560975609756098
+      },
+      "mid": {
+        "n": 68,
+        "accuracy": 0.8823529411764706
+      },
+      "hard": {
+        "n": 35,
+        "accuracy": 0.8857142857142857
+      }
+    }
+  },
+  "global_plus_region_plus_gan": {
+    "label": "global_plus_region_plus_gan",
+    "accuracy": 0.5960912052117264,
+    "precision": 0.5423728813559322,
+    "recall": 0.8888888888888888,
+    "f1": 0.6736842105263158,
+    "auc": 0.7317229038854806,
+    "pca_dims": 600,
+    "raw_dims": 3087,
+    "best_params": {
+      "C": 10,
+      "gamma": "scale"
+    },
+    "difficulty_breakdown": {
+      "easy": {
+        "n": 41,
+        "accuracy": 0.8292682926829268
+      },
+      "mid": {
+        "n": 68,
+        "accuracy": 0.9411764705882353
+      },
+      "hard": {
+        "n": 35,
+        "accuracy": 0.8571428571428571
+      }
+    }
+  }
+}

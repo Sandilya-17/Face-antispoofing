@@ -15,15 +15,36 @@ and the classical Local Binary Pattern (LBP) texture operator of Ojala et
 al. (2002). We extract multi-scale LBP micro-texture features, HOG
 shape/edge features, and color-reproduction statistics in the HSV and
 YCbCr color spaces from 2,041 face images (1,081 real, 960 spoofed —
-GAN/print manipulated at three difficulty levels: easy, mid, hard). Three
-classifiers (Logistic Regression, SVM-RBF, Random Forest) are trained with
-5-fold cross-validated hyperparameter search and evaluated on a held-out
-test set. The best model (SVM-RBF) achieves **69.1% test accuracy** and
-**0.736 AUC**, with a clear degradation pattern across attack difficulty
-that is analyzed in detail. We report full metrics, confusion matrices,
-ROC curves, and a feature-importance analysis showing that HOG
-(edge/shape) features dominate the model's decisions — a finding that
-itself motivates future work incorporating deep local-texture features.
+expert Photoshop-composited region splices, *not* GAN-generated, at three
+difficulty levels: easy, mid, hard; see data/README_DATA.md for the
+corrected dataset provenance). Three classifiers (Logistic Regression,
+SVM-RBF, Random Forest) are trained with 5-fold cross-validated
+hyperparameter search and evaluated on a held-out test set. The best model
+(SVM-RBF) achieves **69.1% test accuracy** and **0.736 AUC**, with a clear
+degradation pattern across attack difficulty that is analyzed in detail. We
+report full metrics, confusion matrices, ROC curves, and a
+feature-importance analysis showing that HOG (edge/shape) features
+dominate the model's decisions — a finding that itself motivates future
+work incorporating deep local-texture features.
+
+**Extension (Section 6):** we implement and evaluate a **GAN-based
+one-class reconstruction anomaly score** — a small convolutional
+generator-discriminator pair trained exclusively on genuine training-split
+faces, whose reconstruction residual and discriminator "realness" score are
+extracted as learned anomaly cues. This GAN-only score is a near-perfect
+fake detector (94–98% accuracy across all attack difficulties, including
+97.6% on the "easy" attacks the classical pipeline detects only 53.7% of
+the time) but, lacking negative examples during training, is poorly
+calibrated against held-out real faces (overall accuracy 0.469, below
+chance). We report both feature-level and score-level fusion of this
+signal with the classical pipeline, finding — consistent with this
+project's own prior region-feature fusion experiments — that naive
+feature-level fusion degrades overall accuracy while score-level fusion
+partially recovers it, at the cost of trading some overall accuracy for
+substantially better easy-attack sensitivity. We present this asymmetry as
+a genuine, actionable finding about the difficulty of combining calibrated
+and uncalibrated PAD signals, rather than a clean win, and outline concrete
+calibration-based next steps.
 
 ---
 
@@ -174,7 +195,129 @@ rather than a universal spoofing signature — a known generalization risk
 in the FAS literature (cross-dataset performance typically drops sharply
 for texture-only methods).
 
-## 6. Discussion & Limitations
+## 6. Extension: GAN-Based One-Class Reconstruction Anomaly Scoring
+
+### 6.1 Motivation and Novelty
+
+Section 5.5 found that HOG (edge/shape) features dominate the classical
+pipeline's decisions (92.3% Gini importance), and `data/README_DATA.md`
+documents an important correction about this corpus: the "fake" images are
+**not GAN-generated** but **expert Photoshop composites** -- human
+retouchers splicing eyes/nose/mouth/whole-face regions from *different*
+real photographs together. The blending seams this leaves (mismatched skin
+tone, lighting, and micro-texture at the splice boundary) are precisely the
+kind of local edge/gradient discontinuity HOG is picking up on -- but only
+through a global, hand-crafted, non-learned descriptor. Section 5.4 further
+showed the classical pipeline is *worst* on "easy" (subtle, single-region)
+attacks, because a small localized splice barely perturbs whole-image
+statistics.
+
+This motivates a complementary, **learned** anomaly cue: a small
+convolutional GAN (encoder-decoder generator + discriminator,
+`src/gan_reconstruction.py`) trained in a strictly **one-class** fashion --
+using only real training-split face images, never any fake/spliced image.
+The generator therefore learns the manifold of genuine, single-source
+faces; a spliced face containing a region whose statistics come from a
+*different* source photo should be out-of-distribution for that manifold,
+and reconstruct poorly -- especially in a **localized** way, concentrated
+at the spliced region, directly targeting the easy-attack blind spot that
+global descriptors miss. A practical side-benefit: this approach needs no
+labelled fake images at all to train the anomaly detector, which is
+valuable given how narrow and attack-specific most public spoof corpora are.
+
+**Architecture:** conv encoder (64->32->16->8, 32/64/128 filters) -> 128-d
+latent -> conv-transpose decoder mirroring the encoder, operating on 64x64
+RGB crops; a separate conv discriminator distinguishes real training images
+from their reconstructions. Trained adversarially (standard GAN loss for
+the discriminator; adversarial loss + 100x L1 reconstruction loss for the
+generator) for 40 epochs on the 756 real images in the training split
+(identical seed=42 split as the rest of this project, so no val/test
+leakage). Reconstruction L1 loss fell steadily from 0.465 to 0.134 with
+stable, balanced adversarial losses (D approx 0.9-1.3 throughout) -- healthy
+convergence, no discriminator collapse.
+
+At inference, seven scalar cues are extracted per image (`gan_features.npz`):
+global reconstruction MSE/L1, global SSIM, the discriminator's "realness"
+score (sigmoid), and per-region (eye/nose/mouth) reconstruction MSE, using
+the same Haar-cascade + anthropometric-proportion box localization this
+project already uses as its documented mediapipe fallback (see
+`region_features_v1_haarcascade_backup.py`).
+
+### 6.2 Results
+
+| Configuration | Accuracy | AUC | Easy | Mid | Hard |
+|---|---|---|---|---|---|
+| Global (baseline, Sec 5.1) | 0.691 | 0.736 | 0.537 | 0.824 | 0.686 |
+| **GAN anomaly-only** | 0.469 | 0.499 | **0.976** | **0.971** | **0.943** |
+| Global + GAN (feature concat) | 0.550 | 0.643 | 0.756 | 0.882 | 0.886 |
+| Global + Region + GAN (feature concat) | 0.596 | 0.732 | 0.829 | 0.941 | 0.857 |
+| Global + GAN (score-level fusion, w=0.75) | 0.619 | 0.731 | 0.756 | -- | -- |
+
+![GAN Fusion Comparison](../results/figures/gan_fusion_comparison.png)
+
+**The headline finding is a striking asymmetry.** The GAN anomaly score
+*alone* is a near-perfect **fake detector** -- it catches 94-98% of spoofed
+images at every attack difficulty, including "easy" attacks that the
+classical pipeline detects only 53.7% of the time (Sec 5.4). This directly
+confirms the motivating hypothesis: a one-class model trained only on
+genuine faces is highly sensitive to the local statistical discontinuities
+left by region splicing, regardless of how subtle the splice is to a
+human/global descriptor. However, its *overall* accuracy (0.469) is
+**below chance**, and its AUC (0.499) is uninformative, because it also
+flags a large fraction of held-out *real* test faces as anomalous -- a
+known failure mode of reconstruction-based one-class anomaly detection: a
+GAN trained on only 756 images generalizes imperfectly to unseen genuine
+faces (different lighting/subjects), so held-out real faces also incur
+non-trivial reconstruction penalty, and with no negative (fake) examples
+during GAN training there is no mechanism to calibrate a decision boundary
+against that penalty.
+
+Feature-level fusion (raw concatenation into the classical pipeline,
+`src/train_gan_fusion.py`) **replicates a failure mode this project already
+documented** for region features (`results/hybrid_fusion_results.json`): a
+noisy or miscalibrated modality, concatenated into a shared PCA space,
+corrupts the well-calibrated global classifier's decision boundary rather
+than adding clean signal -- accuracy *drops* to 0.550 (Global+GAN) despite
+huge easy-attack gains, and only recovers to competitive levels (0.596 acc
+/ 0.732 AUC) once the (also noisy but complementary) region features are
+added alongside. Score-level fusion (`src/train_gan_score_fusion.py`,
+mirroring this project's own established `train_score_fusion.py`
+methodology) is more robust -- each modality gets its own independently-fit
+classifier, combined only at the calibrated-probability level, with the
+blend weight (w=0.75, favoring the global classifier) chosen on the
+validation split -- but still trades some overall accuracy (0.619 vs.
+0.691) for a large easy-attack gain (0.756 vs. 0.537), rather than a clean
+win on every axis.
+
+**This is a genuinely useful negative/nuanced result, not a failed
+experiment.** It shows that a one-class GAN reconstruction score is an
+extremely strong *sensitivity* signal for exactly the failure mode this
+project's own ablations identified (Sec 5.4's easy-attack blind spot), but
+that combining a miscalibrated one-class score with a calibrated supervised
+classifier is a genuine open problem -- naive fusion (feature- or simple
+score-level) cannot fully realize the GAN score's potential without first
+solving its false-positive-on-real problem. Concrete next steps (below)
+follow directly from this diagnosis.
+
+### 6.3 Limitations of the GAN Extension
+
+1. **Small one-class training set (756 images)** limits how well the
+   generator generalizes to held-out genuine faces, directly causing the
+   real-face false-positive problem in Sec 6.2.
+2. **Pixel-space reconstruction error** (MSE/L1/SSIM) is a crude anomaly
+   signal; feature-space anomaly scoring (e.g. discriminator penultimate-
+   layer distance, as in AnoGAN-style methods) is known to be more robust
+   and was not attempted here given time/compute constraints.
+3. **No probability calibration** (Platt scaling / isotonic regression) was
+   applied to the GAN score before fusion; Sec 6.2's fusion results suggest
+   this is likely necessary before naive weighted-average fusion can
+   improve on the global-only baseline outright.
+4. **CPU-only, 64x64 resolution.** A higher-resolution GAN, or one
+   conditioned on the same landmark boxes used for region features (rather
+   than post-hoc cropping the reconstruction), may capture finer splice
+   artifacts.
+
+## 7. Discussion & Limitations (Classical Pipeline)
 
 1. **Ceiling of hand-crafted features.** ~69% accuracy / 0.74 AUC is
    consistent with published color-texture baselines on similarly small,
@@ -200,7 +343,7 @@ for texture-only methods).
    unreliable deep baseline given the time constraint — this is flagged
    explicitly as the top item for future work below.
 
-## 7. Future Work
+## 8. Future Work
 
 - Add a deep learning baseline (transfer-learned CNN, e.g., MobileNetV2 or
   a compact vision transformer) once GPU compute is available, and compare
@@ -213,8 +356,23 @@ for texture-only methods).
   expose print/moiré artifacts that spatial-domain descriptors miss.
 - If video data becomes available, add temporal liveness cues (eye-blink
   detection, remote photoplethysmography).
+- **(GAN extension, Sec 6)** Calibrate the GAN anomaly score (Platt scaling
+  / isotonic regression) before fusion, rather than fusing a raw,
+  uncalibrated reconstruction-error probability.
+- **(GAN extension)** Move from pixel-space reconstruction error to
+  feature-space anomaly scoring (discriminator penultimate-layer distance,
+  AnoGAN-style), which is known to be more robust to exact-pixel
+  generalization gaps.
+- **(GAN extension)** Train the one-class GAN on more real images (this
+  project used only the 756 real images in the training split) and/or with
+  data augmentation, to close the real-face generalization gap responsible
+  for its false-positive rate.
+- **(GAN extension)** A stacked meta-classifier (e.g. logistic regression
+  over out-of-fold global + GAN probabilities) instead of a fixed weighted
+  average may learn a better decision surface than the linear score blend
+  used here.
 
-## 8. Reproducibility
+## 9. Reproducibility
 
 ```
 face_antispoofing/
@@ -223,24 +381,33 @@ face_antispoofing/
 │   ├── feature_extraction.py         # LBP + color + HOG descriptors
 │   ├── build_dataset.py              # extracts features -> results/features.npz
 │   ├── train_evaluate.py             # CV, training, evaluation, plots
+│   ├── gan_reconstruction.py         # trains one-class GAN, extracts anomaly features
+│   ├── train_gan_fusion.py           # feature-level fusion: global/GAN/region+GAN
+│   ├── train_gan_score_fusion.py     # score-level fusion: global + GAN classifiers
 │   └── predict.py                    # single-image inference
 ├── results/
 │   ├── features.npz
+│   ├── gan_features.npz              # GAN anomaly scores (Sec 6)
+│   ├── gan_fusion_results.json
+│   ├── gan_score_fusion_results.json
 │   ├── metrics_summary.json
-│   ├── models/                       # persisted scaler, PCA, best model
-│   └── figures/                      # confusion matrices, ROC, comparison
+│   ├── models/                       # persisted scaler, PCA, classical + GAN models
+│   └── figures/                      # confusion matrices, ROC, comparison plots
 └── report/REPORT.md                  # this document
 ```
 
 To reproduce end-to-end:
 ```bash
 cd src
-python3 build_dataset.py       # ~50s, builds results/features.npz
-python3 train_evaluate.py      # ~2 min, trains/evaluates all models
-python3 predict.py <image.jpg> # run inference on a new image
+python3 build_dataset.py            # ~50s, builds results/features.npz
+python3 train_evaluate.py           # ~2 min, trains/evaluates classical models
+python3 gan_reconstruction.py       # ~25 min CPU, trains GAN + extracts anomaly features
+python3 train_gan_fusion.py         # feature-level fusion comparison (Sec 6.2)
+python3 train_gan_score_fusion.py   # score-level fusion comparison (Sec 6.2)
+python3 predict.py <image.jpg>      # run inference on a new image
 ```
 
-## 9. References
+## 10. References
 
 1. T. Ojala, M. Pietikäinen, T. Mäenpää, "Multiresolution Gray-Scale and
    Rotation Invariant Texture Classification with Local Binary Patterns,"
