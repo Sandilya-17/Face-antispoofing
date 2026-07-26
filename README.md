@@ -18,14 +18,25 @@ Full methodology, results, discussion, and references: **[report/REPORT.md](repo
   patch descriptors, targeting the "easy"-attack blind spot in the global
   pipeline (report Sec. 5.4).
 - **GAN-based one-class reconstruction anomaly scoring** (`src/gan_reconstruction.py`,
-  `src/train_gan_fusion.py`, `src/train_gan_score_fusion.py`): a small
-  convolutional generator-discriminator pair trained *only* on genuine
-  faces, whose reconstruction residual and discriminator score are used as
-  a learned anomaly cue. Alone, this catches 94-98% of spoofed images at
-  every attack difficulty (vs. 53.7% for the classical pipeline on "easy"
-  attacks) but is poorly calibrated on held-out real faces; report Sec. 6
-  covers the full methodology, fusion experiments, and honest discussion of
+  `src/train_gan_fusion.py`, `src/train_gan_score_fusion.py`,
+  `src/train_gan_stacked_fusion.py`): a small convolutional
+  generator-discriminator pair trained *only* on genuine faces, whose
+  reconstruction residual and discriminator score are used as a learned
+  anomaly cue. Alone, this catches 94-98% of spoofed images at every attack
+  difficulty (vs. 53.7% for the classical pipeline on "easy" attacks) but
+  is poorly calibrated on held-out real faces; report Sec. 6 covers the
+  full methodology, three fusion strategies (feature-level, linear
+  score-level, and learned/stacked score-level), and honest discussion of
   this asymmetry.
+- **Deep-learning baseline** (`src/deep_baseline_mobilenetv2.py`): a
+  fine-tuned MobileNetV2 on the same split, for direct comparison against
+  the classical pipeline (0.609 acc / 0.667 AUC vs. 0.691 / 0.736 for the
+  classical model — report Sec. 6.4).
+- **Cross-dataset generalization test** (`src/cross_dataset_eval.py`): the
+  fitted classical model evaluated zero-shot on 12,611 images from NUAA
+  Imposter DB, a different capture setup and attack type. Result: AUC
+  0.507, a chance-level null result quantifying the single-domain
+  generalization gap (report Sec. 6.5).
 
 ## Data
 

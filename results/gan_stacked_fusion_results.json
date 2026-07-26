@@ -1,0 +1,64 @@
+{
+  "method": "logistic_regression_stacking_on_[p_global,p_gan]",
+  "meta_best_C": 1,
+  "meta_coefs_global_gan": [
+    2.7115924245179377,
+    -1.1776872052085734
+  ],
+  "meta_intercept": -0.20112226534474592,
+  "accuracy": 0.6579804560260586,
+  "precision": 0.6326530612244898,
+  "recall": 0.6458333333333334,
+  "f1": 0.6391752577319587,
+  "auc": 0.725332310838446,
+  "difficulty_breakdown": {
+    "easy": {
+      "n": 41,
+      "accuracy": 0.4634146341463415
+    },
+    "mid": {
+      "n": 68,
+      "accuracy": 0.75
+    },
+    "hard": {
+      "n": 35,
+      "accuracy": 0.6571428571428571
+    }
+  },
+  "global_alone_on_test": {
+    "accuracy": 0.6677524429967426,
+    "auc": 0.7361963190184049,
+    "difficulty_breakdown": {
+      "easy": {
+        "n": 41,
+        "accuracy": 0.43902439024390244
+      },
+      "mid": {
+        "n": 68,
+        "accuracy": 0.7352941176470589
+      },
+      "hard": {
+        "n": 35,
+        "accuracy": 0.6571428571428571
+      }
+    }
+  },
+  "gan_alone_on_test": {
+    "accuracy": 0.4723127035830619,
+    "auc": 0.4993609406952966,
+    "difficulty_breakdown": {
+      "easy": {
+        "n": 41,
+        "accuracy": 0.975609756097561
+      },
+      "mid": {
+        "n": 68,
+        "accuracy": 0.9852941176470589
+      },
+      "hard": {
+        "n": 35,
+        "accuracy": 0.9428571428571428
+      }
+    }
+  }
+}
