@@ -4,3 +4,4 @@ scikit-learn
 scikit-image
 matplotlib
 joblib
+tensorflow-cpu   # GAN-based one-class reconstruction anomaly scoring (src/gan_reconstruction.py)
