@@ -1,0 +1,31 @@
+{
+  "per_dataset": {
+    "ciplab_splice": {
+      "held_out_dataset": "ciplab_splice",
+      "n_train": 12611,
+      "n_test": 2041,
+      "accuracy": 0.4767270945614895,
+      "auc": 0.497848731884058,
+      "apcer": 0.0125,
+      "bpcer": 0.9768732654949122,
+      "acer": 0.49468663274745606
+    },
+    "nuaa_print": {
+      "held_out_dataset": "nuaa_print",
+      "n_train": 2041,
+      "n_test": 12611,
+      "accuracy": 0.4011577194512727,
+      "auc": 0.4394855907634323,
+      "apcer": 0.998134825472955,
+      "bpcer": 0.011753183153770812,
+      "acer": 0.5049440043133628
+    }
+  },
+  "aggregate": {
+    "mean_accuracy": 0.4389424070063811,
+    "mean_auc": 0.46866716132374514,
+    "mean_apcer": 0.5053174127364775,
+    "mean_bpcer": 0.4943132243243415,
+    "mean_acer": 0.49981531853040945
+  }
+}
