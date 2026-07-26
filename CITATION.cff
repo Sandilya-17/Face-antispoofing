@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it as below."
+title: "Face Anti-Spoofing via Color-Texture Analysis: A Classical Baseline, Re-Examined"
+authors:
+  - family-names: "Sai Sandilya"
+    given-names: "P.V."
+  - family-names: "Nagur Valli"
+    given-names: "Sk"
+  - family-names: "Shanmukh Reddy"
+    given-names: "G"
+version: 1.0.0
+date-released: 2026-07-25
+repository-code: "https://github.com/Sandilya-17/Face-antispoofing"
+license: MIT
+type: software
+keywords:
+  - face anti-spoofing
+  - presentation attack detection
+  - biometrics
+  - local binary patterns
+  - color texture analysis
