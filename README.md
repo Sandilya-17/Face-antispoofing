@@ -1,6 +1,7 @@
 # Face Anti-Spoofing via Color-Texture Analysis
 ### A Classical-Baseline Presentation Attack Detection (PAD) Study, Re-Examined
 
+[![CI](https://github.com/Sandilya-17/Face-antispoofing/actions/workflows/ci.yml/badge.svg)](https://github.com/Sandilya-17/Face-antispoofing/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Data License: CC BY-NC-SA 4.0](https://img.shields.io/badge/Data%20License-CC--BY--NC--SA--4.0-lightgrey.svg)](data/README_DATA.md)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](requirements.txt)
@@ -48,6 +49,7 @@ here in full rather than hidden — see [§ Limitations](#honest-limitations--ne
 - [Method](#method)
 - [Repository Structure](#repository-structure)
 - [Reproducing the Results](#reproducing-the-results)
+- [Development & Testing](#development--testing)
 - [Honest Limitations / Negative Results](#honest-limitations--negative-results)
 - [Dataset & Licensing](#dataset--licensing)
 - [Citation](#citation)
@@ -222,6 +224,27 @@ python3 cross_dataset_eval.py
 Every script writes its metrics to `results/*.json` and its figures to
 `results/figures/`, matching the numbers reported above and in
 [`report/REPORT.md`](report/REPORT.md).
+
+---
+
+## Development & Testing
+
+`tests/test_feature_extraction.py` covers the descriptor pipeline
+(`src/feature_extraction.py`) with synthetic in-memory images, so it runs in
+CI without the license-restricted datasets. It checks output dimensionality
+against the paper's reported 1,730-d vector (54 LBP + 108 color + 1,568
+HOG), value validity, and determinism — it is a plumbing/regression check,
+not a substitute for reproducing the accuracy/AUC numbers, which does
+require the real data.
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/ -v
+ruff check src/ tests/          # optional lint pass
+```
+
+GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs
+the same test suite on every push/PR to `main`, on Python 3.10 and 3.11.
 
 ---
 

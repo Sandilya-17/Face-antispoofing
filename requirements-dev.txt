@@ -1,0 +1,5 @@
+-r requirements.txt
+
+# Testing and linting (not required to reproduce paper results)
+pytest>=7.4,<9
+ruff>=0.4,<1
